@@ -1,9 +1,10 @@
-export { BaseService } from "./baseService";
+import { seedInitialData } from "@/services/core/seed";
 
-export { studentService, StudentsService } from "./studentService";
-export { teacherService, TeachersService } from "./teacherService";
-export { courseService, CoursesService } from "./courseService";
-export { classService, ClassesService } from "./classService";
-export { checkinService, CheckinsService } from "./checkinService";
+seedInitialData();
 
+export { studentService } from "./studentService";
+export { teacherService } from "./teacherService";
+export { courseService } from "./courseService";
+export { classService } from "./classService";
+export { checkinService } from "./checkinService";
 export { httpClient } from "./httpClient";
