@@ -12,6 +12,7 @@ import TeachersPage from "./pages/teachers/TeachersPage";
 import CoursesPage from "./pages/courses/CoursesPage";
 import ClassesPage from "./pages/classes/ClassesPage";
 import CheckinsPage from "./pages/checkins/CheckinsPage";
+import PlansPage from "./pages/plans/PlansPage";
 import UsersPage from "./pages/users/UsersPage";
 import LoginPage from "./pages/auth/LoginPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -77,6 +78,14 @@ const App = () => (
               element={
                 <AuthGuard>
                   <CheckinsPage />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/plans"
+              element={
+                <AuthGuard>
+                  <PlansPage />
                 </AuthGuard>
               }
             />

@@ -9,6 +9,14 @@ export interface Student {
   phone: string;
   birthDate: string;
   planType: string;
+  integrationId?: string | null;
+  planId?: string;
+  planStartDate?: string;
+  planEndDate?: string | null;
+  guardians?: Array<{
+    guardianStudentId: string;
+    relationship: string;
+  }>;
   status: StudentStatus;
 }
 
@@ -26,25 +34,44 @@ export interface Course {
   id: string;
   name: string;
   teacherId: string;
+  teacherIds?: string[];
   capacity: number;
   description: string;
 }
 
 export interface Class {
   id: string;
+  name: string;
   courseId: string;
   teacherId: string;
   date: string;
   time: string;
   capacity: number;
+  schedules?: Array<{
+    weekday: number;
+    startTime: string;
+    endTime: string;
+  }>;
 }
 
 export interface Checkin {
   id: string;
   studentId: string;
   classId: string;
+  courseId?: string;
   checkinTime: string;
   source: CheckinSource;
+  studentName?: string;
+  courseName?: string;
+  className?: string;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  periodicity: "monthly" | "semiannual" | "annual";
+  monthlyCheckinLimit: number;
 }
 
 export interface ApiResponse<T> {

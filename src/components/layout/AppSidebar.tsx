@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   Dumbbell,
   Shield,
+  Wallet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -33,6 +34,7 @@ const menuItems = [
   { title: "Cursos", url: "/courses", icon: BookOpen, resource: "courses", action: "read" },
   { title: "Aulas", url: "/classes", icon: Calendar, resource: "classes", action: "read" },
   { title: "Check-ins", url: "/checkins", icon: ClipboardCheck, resource: "checkins", action: "read" },
+  { title: "Planos", url: "/plans", icon: Wallet, resource: "plans", action: "read" },
   { title: "Usuários", url: "/users", icon: Shield, resource: "users", action: "read" },
 ];
 

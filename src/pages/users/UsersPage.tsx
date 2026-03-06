@@ -16,6 +16,8 @@ import { usersService } from "@/services/users/users.service";
 import { UserAvatarUpload } from "@/components/avatar/UserAvatarUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
+import { ExportButton } from "@/components/ui/ExportButton";
+import { isValidCpf } from "@/utils/cpf";
 
 interface UserRow {
   id: string;
@@ -36,7 +38,7 @@ interface RoleRow {
 const schema = z.object({
   name: z.string().min(3),
   email: z.string().email(),
-  cpf: z.string().min(11),
+  cpf: z.string().min(11).refine((value) => isValidCpf(value), "CPF inválido"),
   roleId: z.string().uuid(),
   status: z.enum(["active", "inactive", "blocked"]),
   password: z.string().min(8).optional(),
@@ -181,16 +183,29 @@ export default function UsersPage() {
         description="CRUD de usuários e perfis"
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Usuários" }]}
         actions={
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditing(null);
-              form.reset({ name: "", email: "", cpf: "", roleId: "", status: "active", password: "" });
-              setOpen(true);
-            }}
-          >
-            <Plus className="mr-1.5 h-4 w-4" />Novo Usuário
-          </Button>
+          <div className="flex gap-2">
+            <ExportButton
+              data={processed.data}
+              fileName="users"
+              columns={[
+                { key: "name", label: "Nome" },
+                { key: "email", label: "Email" },
+                { key: "cpf", label: "CPF" },
+                { key: "roleName", label: "Perfil" },
+                { key: "status", label: "Status" },
+              ]}
+            />
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditing(null);
+                form.reset({ name: "", email: "", cpf: "", roleId: "", status: "active", password: "" });
+                setOpen(true);
+              }}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />Novo Usuário
+            </Button>
+          </div>
         }
       />
 

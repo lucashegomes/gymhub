@@ -15,11 +15,13 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
 import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
+import { ExportButton } from "@/components/ui/ExportButton";
+import { isValidCpf } from "@/utils/cpf";
 import type { Teacher } from "@/types";
 
 const schema = z.object({
   name: z.string().min(3),
-  cpf: z.string().min(11),
+  cpf: z.string().min(11).refine((value) => isValidCpf(value), "CPF inválido"),
   email: z.string().email(),
   phone: z.string().min(8),
   specialty: z.string().min(2),
@@ -80,7 +82,26 @@ const TeachersPage = () => {
         <CrudPageSkeleton />
       ) : (
         <>
-      <PageHeader title="Professores" description="CRUD completo de professores" breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Professores" }]} actions={<Button size="sm" onClick={() => { setEditing(null); form.reset(); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Novo Professor</Button>} />
+      <PageHeader
+        title="Professores"
+        description="CRUD completo de professores"
+        breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Professores" }]}
+        actions={
+          <div className="flex gap-2">
+            <ExportButton
+              data={processed.data}
+              fileName="teachers"
+              columns={[
+                { key: "name", label: "Nome" },
+                { key: "cpf", label: "CPF" },
+                { key: "email", label: "Email" },
+                { key: "specialty", label: "Especialidade" },
+              ]}
+            />
+            <Button size="sm" onClick={() => { setEditing(null); form.reset(); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Novo Professor</Button>
+          </div>
+        }
+      />
       <div className="mb-4"><SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar professor..." className="max-w-sm" /></div>
       <DataTable columns={columns} data={processed.data} sortKey={sortKey} sortDirection={sortDirection} onSortChange={onSortChange} />
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />

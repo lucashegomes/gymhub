@@ -17,11 +17,13 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
 import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
+import { ExportButton } from "@/components/ui/ExportButton";
 import type { Course, Teacher } from "@/types";
 
 const schema = z.object({
   name: z.string().min(3),
-  teacherId: z.string().min(1),
+  teacherId: z.string().optional(),
+  teacherIds: z.array(z.string().uuid()).min(1),
   capacity: z.coerce.number().int().positive(),
   description: z.string().min(5),
 });
@@ -40,7 +42,10 @@ const CoursesPage = () => {
   const [open, setOpen] = useState(false);
 
   const teacherName = (id: string) => teachers.find((t) => t.id === id)?.name ?? "-";
-  const form = useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { name: "", teacherId: "", capacity: 1, description: "" } });
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "", teacherId: undefined, teacherIds: [], capacity: 1, description: "" },
+  });
 
   const processed = useMemo(() => {
     const filtered = items.filter((c) => `${c.name} ${c.description} ${teacherName(c.teacherId)} ${c.capacity}`.toLowerCase().includes(search.toLowerCase()));
@@ -65,7 +70,12 @@ const CoursesPage = () => {
 
   const columns: Column<Course>[] = [
     { key: "name", header: "Nome", sortable: true },
-    { key: "teacherId", header: "Professor", sortable: true, render: (c) => teacherName(c.teacherId) },
+    {
+      key: "teacherId",
+      header: "Professores",
+      sortable: true,
+      render: (c) => (c.teacherIds?.length ? c.teacherIds.map((id) => teacherName(id)).join(", ") : teacherName(c.teacherId)),
+    },
     { key: "capacity", header: "Capacidade", sortable: true },
     { key: "description", header: "Descrição", sortable: true },
     { key: "actions", header: "Ações", render: (c) => <div className="flex gap-2" onClick={(e) => e.stopPropagation()}><Button size="icon" variant="outline" onClick={() => { setEditing(c); form.reset(c); setOpen(true); }}><Pencil className="h-4 w-4" /></Button><Button size="icon" variant="destructive" onClick={() => remove(c.id)}><Trash2 className="h-4 w-4" /></Button></div> },
@@ -77,11 +87,29 @@ const CoursesPage = () => {
         <CrudPageSkeleton />
       ) : (
         <>
-      <PageHeader title="Cursos" description="CRUD completo de cursos" breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Cursos" }]} actions={<Button size="sm" onClick={() => { setEditing(null); form.reset(); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Novo Curso</Button>} />
+      <PageHeader
+        title="Cursos"
+        description="CRUD completo de cursos"
+        breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Cursos" }]}
+        actions={
+          <div className="flex gap-2">
+            <ExportButton
+              data={processed.data}
+              fileName="courses"
+              columns={[
+                { key: "name", label: "Nome" },
+                { key: "capacity", label: "Capacidade" },
+                { key: "description", label: "Descrição" },
+              ]}
+            />
+            <Button size="sm" onClick={() => { setEditing(null); form.reset({ name: "", teacherIds: [], capacity: 1, description: "" } as any); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Novo Curso</Button>
+          </div>
+        }
+      />
       <div className="mb-4"><SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar curso..." className="max-w-sm" /></div>
       <DataTable columns={columns} data={processed.data} sortKey={sortKey} sortDirection={sortDirection} onSortChange={onSortChange} />
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />
-      <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Editar curso" : "Novo curso"}</DialogTitle></DialogHeader><form onSubmit={submit} className="space-y-3"><div><Label>name</Label><Input {...form.register("name")} /><p className="text-xs text-destructive">{form.formState.errors.name?.message}</p></div><div><Label>teacherId</Label><Select value={form.watch("teacherId")} onValueChange={(v) => form.setValue("teacherId", v)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{teachers.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select><p className="text-xs text-destructive">{form.formState.errors.teacherId?.message}</p></div><div><Label>capacity</Label><Input type="number" {...form.register("capacity")} /><p className="text-xs text-destructive">{form.formState.errors.capacity?.message}</p></div><div><Label>description</Label><Textarea {...form.register("description")} /><p className="text-xs text-destructive">{form.formState.errors.description?.message}</p></div><Button type="submit" className="w-full">Salvar</Button></form></DialogContent></Dialog>
+      <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Editar curso" : "Novo curso"}</DialogTitle></DialogHeader><form onSubmit={submit} className="space-y-3"><div><Label>name</Label><Input {...form.register("name")} /><p className="text-xs text-destructive">{form.formState.errors.name?.message}</p></div><div><Label>Professores</Label><div className="max-h-40 overflow-auto rounded-md border p-3 space-y-2">{teachers.map((t) => {const checked = (form.watch("teacherIds") || []).includes(t.id); return (<label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={checked} onChange={() => {const current = form.watch("teacherIds") || []; form.setValue("teacherIds", checked ? current.filter((id) => id !== t.id) : [...current, t.id]);}} />{t.name}</label>);})}</div><p className="text-xs text-destructive">{form.formState.errors.teacherIds?.message}</p></div><div><Label>capacity</Label><Input type="number" {...form.register("capacity")} /><p className="text-xs text-destructive">{form.formState.errors.capacity?.message}</p></div><div><Label>description</Label><Textarea {...form.register("description")} /><p className="text-xs text-destructive">{form.formState.errors.description?.message}</p></div><Button type="submit" className="w-full">Salvar</Button></form></DialogContent></Dialog>
         </>
       )}
     </AppLayout>

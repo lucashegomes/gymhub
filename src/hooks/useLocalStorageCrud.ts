@@ -6,6 +6,7 @@ const RESOURCE_BY_KEY: Record<string, string> = {
   "gymhub:courses": "courses",
   "gymhub:classes": "classes",
   "gymhub:checkins": "checkins",
+  "gymhub:plans": "plans",
 };
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
@@ -59,11 +60,12 @@ export function useLocalStorageCrud<T extends { id: string }>(storageKey: string
   const [error, setError] = useState<string | null>(null);
   const resource = resolveResource(storageKey);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (queryString?: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/${resource}?page=1&pageSize=1000`, {
+      const suffix = queryString ? `?${queryString}` : "?page=1&pageSize=1000";
+      const response = await fetch(`${API_BASE_URL}/${resource}${suffix}`, {
         headers: buildHeaders(),
       });
 
