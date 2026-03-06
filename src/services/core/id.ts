@@ -1,1 +1,1 @@
-export const generateId = () => crypto.randomUUID()
+export type EntityId = string;
