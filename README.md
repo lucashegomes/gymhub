@@ -121,3 +121,23 @@ Defina em `.env` (frontend):
 ```env
 VITE_API_URL=http://localhost:3300/api
 ```
+
+## Autenticacao E Permissoes
+
+Fluxo implementado:
+- Login com email ou CPF
+- JWT armazenado em `gymhub:auth:token`
+- Contexto global em `src/contexts/AuthContext.tsx`
+- Guardas de rota:
+  - `AuthGuard`
+  - `PermissionGuard`
+- Paginas de auth:
+  - `/auth/login`
+  - `/auth/forgot-password`
+  - `/auth/reset-password`
+- CRUD de usuarios:
+  - `/users`
+
+Credencial padrao (dev), apos `npm run auth:bootstrap` no backend:
+- email: `admin@gymhub.local`
+- senha: `Admin@123`

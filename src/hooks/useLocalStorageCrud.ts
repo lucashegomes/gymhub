@@ -9,6 +9,15 @@ const RESOURCE_BY_KEY: Record<string, string> = {
 };
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+const TOKEN_KEY = "gymhub:auth:token";
+
+function buildHeaders() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 function resolveResource(storageKey: string): string {
   const resource = RESOURCE_BY_KEY[storageKey];
@@ -49,7 +58,9 @@ export function useLocalStorageCrud<T extends { id: string }>(storageKey: string
   const resource = resolveResource(storageKey);
 
   const refresh = useCallback(async () => {
-    const response = await fetch(`${API_BASE_URL}/${resource}?page=1&pageSize=1000`);
+    const response = await fetch(`${API_BASE_URL}/${resource}?page=1&pageSize=1000`, {
+      headers: buildHeaders(),
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to load ${resource}: HTTP ${response.status}`);
@@ -72,11 +83,11 @@ export function useLocalStorageCrud<T extends { id: string }>(storageKey: string
         try {
           const body = normalizePayload(storageKey, payload as Record<string, unknown>);
 
-          const response = await fetch(`${API_BASE_URL}/${resource}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
+        const response = await fetch(`${API_BASE_URL}/${resource}`, {
+          method: "POST",
+          headers: buildHeaders(),
+          body: JSON.stringify(body),
+        });
 
           if (!response.ok) {
             throw new Error(`Failed to create ${resource}: HTTP ${response.status}`);
@@ -94,11 +105,11 @@ export function useLocalStorageCrud<T extends { id: string }>(storageKey: string
         try {
           const body = normalizePayload(storageKey, payload as Record<string, unknown>);
 
-          const response = await fetch(`${API_BASE_URL}/${resource}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
+        const response = await fetch(`${API_BASE_URL}/${resource}/${id}`, {
+          method: "PUT",
+          headers: buildHeaders(),
+          body: JSON.stringify(body),
+        });
 
           if (!response.ok) {
             throw new Error(`Failed to update ${resource}: HTTP ${response.status}`);
@@ -116,6 +127,7 @@ export function useLocalStorageCrud<T extends { id: string }>(storageKey: string
         try {
           const response = await fetch(`${API_BASE_URL}/${resource}/${id}`, {
             method: "DELETE",
+            headers: buildHeaders(),
           });
 
           if (!response.ok) {

@@ -6,9 +6,11 @@ import {
   Calendar,
   ClipboardCheck,
   Dumbbell,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -25,18 +27,21 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 const menuItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Alunos", url: "/students", icon: Users },
-  { title: "Professores", url: "/teachers", icon: GraduationCap },
-  { title: "Cursos", url: "/courses", icon: BookOpen },
-  { title: "Aulas", url: "/classes", icon: Calendar },
-  { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, resource: "dashboard", action: "view" },
+  { title: "Alunos", url: "/students", icon: Users, resource: "students", action: "read" },
+  { title: "Professores", url: "/teachers", icon: GraduationCap, resource: "teachers", action: "read" },
+  { title: "Cursos", url: "/courses", icon: BookOpen, resource: "courses", action: "read" },
+  { title: "Aulas", url: "/classes", icon: Calendar, resource: "classes", action: "read" },
+  { title: "Check-ins", url: "/checkins", icon: ClipboardCheck, resource: "checkins", action: "read" },
+  { title: "Usuários", url: "/users", icon: Shield, resource: "users", action: "read" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { hasPermission } = useAuth();
+  const visibleMenuItems = menuItems.filter((item) => hasPermission(item.resource, item.action));
 
   return (
     <Sidebar collapsible="icon">
@@ -60,7 +65,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
+              {visibleMenuItems.map((item) => {
                 const active = item.url === "/"
                   ? location.pathname === "/"
                   : location.pathname.startsWith(item.url);
