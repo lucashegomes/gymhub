@@ -1,4 +1,5 @@
-// ===== Core Entity Types =====
+export type StudentStatus = "active" | "inactive" | "suspended";
+export type CheckinSource = "manual" | "wellhub";
 
 export interface Student {
   id: string;
@@ -8,8 +9,7 @@ export interface Student {
   phone: string;
   birthDate: string;
   planType: string;
-  status: "active" | "inactive";
-  createdAt: string;
+  status: StudentStatus;
 }
 
 export interface Teacher {
@@ -20,7 +20,6 @@ export interface Teacher {
   phone: string;
   specialty: string;
   pricePerClass: number;
-  createdAt: string;
 }
 
 export interface Course {
@@ -29,7 +28,6 @@ export interface Course {
   teacherId: string;
   capacity: number;
   description: string;
-  createdAt: string;
 }
 
 export interface Class {
@@ -39,7 +37,6 @@ export interface Class {
   date: string;
   time: string;
   capacity: number;
-  createdAt: string;
 }
 
 export interface Checkin {
@@ -47,10 +44,8 @@ export interface Checkin {
   studentId: string;
   classId: string;
   checkinTime: string;
-  source: "manual" | "wellhub";
+  source: CheckinSource;
 }
-
-// ===== API Types =====
 
 export interface ApiResponse<T> {
   data: T;

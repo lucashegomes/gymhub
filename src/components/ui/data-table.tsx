@@ -9,13 +9,15 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FileX } from "lucide-react";
+import { ArrowUpDown, FileX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface Column<T> {
   key: string;
   header: string;
   render?: (item: T) => ReactNode;
   className?: string;
+  sortable?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -25,6 +27,9 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   emptyDescription?: string;
   onRowClick?: (item: T) => void;
+  sortKey?: string;
+  sortDirection?: "asc" | "desc";
+  onSortChange?: (key: string) => void;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -34,6 +39,9 @@ export function DataTable<T extends { id: string }>({
   emptyMessage = "Nenhum registro encontrado",
   emptyDescription = "Tente ajustar os filtros ou adicione um novo registro.",
   onRowClick,
+  sortKey,
+  sortDirection,
+  onSortChange,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
@@ -78,7 +86,21 @@ export function DataTable<T extends { id: string }>({
         <TableHeader>
           <TableRow>
             {columns.map((col) => (
-              <TableHead key={col.key} className={col.className}>{col.header}</TableHead>
+              <TableHead key={col.key} className={col.className}>
+                {col.sortable ? (
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 font-semibold"
+                    onClick={() => onSortChange?.(col.key)}
+                  >
+                    {col.header}
+                    <ArrowUpDown className={`ml-2 h-3.5 w-3.5 ${sortKey === col.key ? "opacity-100" : "opacity-40"}`} />
+                    {sortKey === col.key && (
+                      <span className="ml-1 text-xs">{sortDirection === "asc" ? "↑" : "↓"}</span>
+                    )}
+                  </Button>
+                ) : col.header}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
