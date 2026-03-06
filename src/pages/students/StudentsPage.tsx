@@ -10,27 +10,25 @@ import { useState } from "react";
 import type { Student } from "@/types";
 
 const mockStudents: Student[] = [
-  { id: "1", name: "Maria Silva", email: "maria@email.com", phone: "11999990001", cpf: "12345678901", birthDate: "1995-03-15", plan: "Premium", status: "active", enrollmentDate: "2025-01-10", createdAt: "", updatedAt: "" },
-  { id: "2", name: "João Santos", email: "joao@email.com", phone: "11999990002", cpf: "12345678902", birthDate: "1990-07-22", plan: "Básico", status: "active", enrollmentDate: "2025-02-05", createdAt: "", updatedAt: "" },
-  { id: "3", name: "Ana Costa", email: "ana@email.com", phone: "11999990003", cpf: "12345678903", birthDate: "1988-11-30", plan: "Premium", status: "inactive", enrollmentDate: "2024-06-20", createdAt: "", updatedAt: "" },
-  { id: "4", name: "Pedro Lima", email: "pedro@email.com", phone: "11999990004", cpf: "12345678904", birthDate: "2000-01-05", plan: "Básico", status: "suspended", enrollmentDate: "2025-03-01", createdAt: "", updatedAt: "" },
+  { id: "1", name: "Maria Silva", email: "maria@email.com", phone: "11999990001", cpf: "12345678901", birthDate: "1995-03-15", planType: "Premium", status: "active", createdAt: "2025-01-10" },
+  { id: "2", name: "João Santos", email: "joao@email.com", phone: "11999990002", cpf: "12345678902", birthDate: "1990-07-22", planType: "Básico", status: "active", createdAt: "2025-02-05" },
+  { id: "3", name: "Ana Costa", email: "ana@email.com", phone: "11999990003", cpf: "12345678903", birthDate: "1988-11-30", planType: "Premium", status: "inactive", createdAt: "2024-06-20" },
+  { id: "4", name: "Pedro Lima", email: "pedro@email.com", phone: "11999990004", cpf: "12345678904", birthDate: "2000-01-05", planType: "Básico", status: "inactive", createdAt: "2025-03-01" },
 ];
 
-const statusMap: Record<string, "success" | "inactive" | "warning"> = {
+const statusMap: Record<string, "success" | "inactive"> = {
   active: "success",
   inactive: "inactive",
-  suspended: "warning",
 };
 const statusLabel: Record<string, string> = {
   active: "Ativo",
   inactive: "Inativo",
-  suspended: "Suspenso",
 };
 
 const columns: Column<Student>[] = [
   { key: "name", header: "Nome" },
   { key: "email", header: "Email" },
-  { key: "plan", header: "Plano" },
+  { key: "planType", header: "Plano" },
   {
     key: "status",
     header: "Status",
