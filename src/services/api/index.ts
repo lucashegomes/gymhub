@@ -1,3 +1,7 @@
+import { seedInitialData } from "@/services/core/seed";
+
+seedInitialData();
+
 export { studentService } from "./studentService";
 export { teacherService } from "./teacherService";
 export { courseService } from "./courseService";
