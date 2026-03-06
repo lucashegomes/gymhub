@@ -1,3 +1,4 @@
+import { resolveApiAssetUrl } from "@/services/core/media";
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 function authHeaders() {
@@ -26,21 +27,34 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
+function normalizeUserPayload(data: any) {
+  if (!data || typeof data !== "object") return data;
+  return {
+    ...data,
+    photoUrl: resolveApiAssetUrl(data.photoUrl),
+  };
+}
+
 export const usersService = {
   list(params = "?page=1&pageSize=50") {
-    return request<{ data: any[]; total: number; page: number; pageSize: number; totalPages: number }>(`/users${params}`);
+    return request<{ data: any[]; total: number; page: number; pageSize: number; totalPages: number }>(`/users${params}`).then(
+      (payload) => ({
+        ...payload,
+        data: (payload.data || []).map((item) => normalizeUserPayload(item)),
+      }),
+    );
   },
   create(payload: Record<string, unknown>) {
     return request<{ data: any; success: boolean; message: string }>("/users", {
       method: "POST",
       body: JSON.stringify(payload),
-    });
+    }).then((response) => ({ ...response, data: normalizeUserPayload(response.data) }));
   },
   update(id: string, payload: Record<string, unknown>) {
     return request<{ data: any; success: boolean; message: string }>(`/users/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
-    });
+    }).then((response) => ({ ...response, data: normalizeUserPayload(response.data) }));
   },
   remove(id: string) {
     return request<{ success: boolean; message: string }>(`/users/${id}`, {
@@ -61,7 +75,11 @@ export const usersService = {
       if (!response.ok) {
         throw new Error((data as { message?: string }).message || `HTTP ${response.status}`);
       }
-      return data as { data: any; success: boolean; message: string };
+      const responseData = data as { data: any; success: boolean; message: string };
+      return {
+        ...responseData,
+        data: normalizeUserPayload(responseData.data),
+      };
     });
   },
 };

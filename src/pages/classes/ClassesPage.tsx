@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
+import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
 import type { Class, Course, Teacher } from "@/types";
 
 const schema = z.object({
@@ -29,7 +30,7 @@ type FormData = z.infer<typeof schema>;
 
 const ClassesPage = () => {
   usePageTitle("Aulas");
-  const { items, create, update, remove } = useLocalStorageCrud<Class>("gymhub:classes");
+  const { items, create, update, remove, isLoading } = useLocalStorageCrud<Class>("gymhub:classes");
   const { items: courses } = useLocalStorageCrud<Course>("gymhub:courses");
   const { items: teachers } = useLocalStorageCrud<Teacher>("gymhub:teachers");
   const [search, setSearch] = useState("");
@@ -68,11 +69,17 @@ const ClassesPage = () => {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <CrudPageSkeleton />
+      ) : (
+        <>
       <PageHeader title="Aulas" description="CRUD completo de aulas" breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Aulas" }]} actions={<Button size="sm" onClick={() => { setEditing(null); form.reset(); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Nova Aula</Button>} />
       <div className="mb-4"><SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar aula..." className="max-w-sm" /></div>
       <DataTable columns={columns} data={processed.data} sortKey={sortKey} sortDirection={sortDirection} onSortChange={(key) => { const k = key as keyof Class; if (k === sortKey) setSortDirection((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDirection("asc"); } }} />
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />
       <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Editar aula" : "Nova aula"}</DialogTitle></DialogHeader><form onSubmit={form.handleSubmit((v) => { if (editing) update(editing.id, v); else create(v); setOpen(false); })} className="space-y-3"><div><Label>courseId</Label><Select value={form.watch("courseId")} onValueChange={(v) => form.setValue("courseId", v)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><p className="text-xs text-destructive">{form.formState.errors.courseId?.message}</p></div><div><Label>teacherId</Label><Select value={form.watch("teacherId")} onValueChange={(v) => form.setValue("teacherId", v)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{teachers.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent></Select><p className="text-xs text-destructive">{form.formState.errors.teacherId?.message}</p></div><div><Label>date</Label><Input type="date" {...form.register("date")} /><p className="text-xs text-destructive">{form.formState.errors.date?.message}</p></div><div><Label>time</Label><Input type="time" {...form.register("time")} /><p className="text-xs text-destructive">{form.formState.errors.time?.message}</p></div><div><Label>capacity</Label><Input type="number" {...form.register("capacity")} /><p className="text-xs text-destructive">{form.formState.errors.capacity?.message}</p></div><Button type="submit" className="w-full">Salvar</Button></form></DialogContent></Dialog>
+        </>
+      )}
     </AppLayout>
   );
 };

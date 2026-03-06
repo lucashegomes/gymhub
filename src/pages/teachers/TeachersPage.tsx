@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
+import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
 import type { Teacher } from "@/types";
 
 const schema = z.object({
@@ -29,7 +30,7 @@ type FormData = z.infer<typeof schema>;
 
 const TeachersPage = () => {
   usePageTitle("Professores");
-  const { items, create, update, remove } = useLocalStorageCrud<Teacher>("gymhub:teachers");
+  const { items, create, update, remove, isLoading } = useLocalStorageCrud<Teacher>("gymhub:teachers");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Teacher>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -75,11 +76,17 @@ const TeachersPage = () => {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <CrudPageSkeleton />
+      ) : (
+        <>
       <PageHeader title="Professores" description="CRUD completo de professores" breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Professores" }]} actions={<Button size="sm" onClick={() => { setEditing(null); form.reset(); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Novo Professor</Button>} />
       <div className="mb-4"><SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar professor..." className="max-w-sm" /></div>
       <DataTable columns={columns} data={processed.data} sortKey={sortKey} sortDirection={sortDirection} onSortChange={onSortChange} />
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />
       <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Editar professor" : "Novo professor"}</DialogTitle></DialogHeader><form onSubmit={submit} className="space-y-3">{(["name", "cpf", "email", "phone", "specialty", "pricePerClass"] as const).map((field) => <div key={field}><Label>{field}</Label><Input type={field === "email" ? "email" : field === "pricePerClass" ? "number" : "text"} step={field === "pricePerClass" ? "0.01" : undefined} {...form.register(field)} /><p className="text-xs text-destructive">{form.formState.errors[field]?.message}</p></div>)}<Button type="submit" className="w-full">Salvar</Button></form></DialogContent></Dialog>
+        </>
+      )}
     </AppLayout>
   );
 };

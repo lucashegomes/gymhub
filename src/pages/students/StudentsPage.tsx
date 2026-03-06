@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
+import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
 import type { Student } from "@/types";
 
 const schema = z.object({
@@ -35,7 +36,7 @@ const statusVariant = { active: "success", inactive: "inactive", suspended: "war
 
 const StudentsPage = () => {
   usePageTitle("Alunos");
-  const { items, create, update, remove } = useLocalStorageCrud<Student>("gymhub:students");
+  const { items, create, update, remove, isLoading } = useLocalStorageCrud<Student>("gymhub:students");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Student>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -115,6 +116,10 @@ const StudentsPage = () => {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <CrudPageSkeleton />
+      ) : (
+        <>
       <PageHeader
         title="Alunos"
         description="CRUD completo de alunos"
@@ -153,6 +158,8 @@ const StudentsPage = () => {
           </form>
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </AppLayout>
   );
 };

@@ -1,10 +1,13 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppLayout } from "@/components/layout";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatsCard } from "@/components/ui/stats-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DashboardSkeleton } from "@/components/ui/dashboard-skeleton";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { Users, GraduationCap, ClipboardCheck, Calendar, TrendingUp } from "lucide-react";
+import { Users, GraduationCap, ClipboardCheck, Calendar, TrendingUp, RefreshCw } from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -25,7 +28,7 @@ const checkinData = [
   { day: "Dom", checkins: 15 },
 ];
 
-const recentActivity = [
+const staticRecentActivity = [
   { id: "1", name: "Maria Silva", action: "Check-in", time: "há 5 min", status: "success" as const },
   { id: "2", name: "João Santos", action: "Matrícula", time: "há 15 min", status: "success" as const },
   { id: "3", name: "Ana Costa", action: "Aula cancelada", time: "há 30 min", status: "warning" as const },
@@ -33,8 +36,95 @@ const recentActivity = [
   { id: "5", name: "Carla Dias", action: "Check-in", time: "há 1h", status: "success" as const },
 ];
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+const GYM_ID = import.meta.env.VITE_GYMPASS_GYM_ID || "1";
+const REFRESH_INTERVAL_MS = 30_000;
+
+type ActivityItem = {
+  id: string;
+  name: string;
+  action: string;
+  time: string;
+  status: "success" | "warning" | "inactive";
+};
+
+async function validateRecentCheckin() {
+  const token = localStorage.getItem("gymhub:auth:token") || "";
+  const response = await fetch(`${API_BASE_URL}/gympass/gyms/${GYM_ID}/checkins/validate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({
+      checkinCode: `gymhub-dashboard-${Date.now()}`,
+      source: "dashboard_refresh",
+      requestedAt: new Date().toISOString(),
+    }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = (payload as { message?: string }).message || `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
 const DashboardPage = () => {
   usePageTitle("Dashboard");
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>(staticRecentActivity);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  const refreshRecentActivity = useCallback(async () => {
+    if (isRefreshing) return;
+
+    setIsRefreshing(true);
+    try {
+      // await validateRecentCheckin();
+      const newItem: ActivityItem = {
+        id: crypto.randomUUID(),
+        name: "Integração Gympass",
+        action: "Check-in validado",
+        time: "agora",
+        status: "success",
+      };
+
+      setRecentActivity((current) => [newItem, ...current.slice(0, 7)]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Falha desconhecida";
+      const newItem: ActivityItem = {
+        id: crypto.randomUUID(),
+        name: "Integração Gympass",
+        action: `Falha validação: ${message}`,
+        time: "agora",
+        status: "warning",
+      };
+
+      setRecentActivity((current) => [newItem, ...current.slice(0, 7)]);
+    } finally {
+      setLastSyncAt(new Date());
+      setIsRefreshing(false);
+      setIsInitialLoading(false);
+    }
+  }, [isRefreshing]);
+
+  useEffect(() => {
+    void refreshRecentActivity();
+    const timer = window.setInterval(() => {
+      void refreshRecentActivity();
+    }, REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(timer);
+  }, [refreshRecentActivity]);
+
+  const syncText = useMemo(() => {
+    if (!lastSyncAt) return "Sem sincronização";
+    return `Atualizado às ${lastSyncAt.toLocaleTimeString("pt-BR")}`;
+  }, [lastSyncAt]);
 
   return (
     <AppLayout>
@@ -44,6 +134,10 @@ const DashboardPage = () => {
         breadcrumbs={[{ label: "Dashboard" }]}
       />
 
+      {isInitialLoading ? (
+        <DashboardSkeleton />
+      ) : (
+        <>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatsCard
           title="Total de Alunos"
@@ -117,7 +211,14 @@ const DashboardPage = () => {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">Atividade Recente</CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base font-semibold">Atividade Recente</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => void refreshRecentActivity()} disabled={isRefreshing}>
+                <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                Atualizar
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">{syncText}</p>
           </CardHeader>
           <CardContent className="space-y-0">
             {recentActivity.map((item) => (
@@ -132,6 +233,8 @@ const DashboardPage = () => {
           </CardContent>
         </Card>
       </div>
+        </>
+      )}
     </AppLayout>
   );
 };

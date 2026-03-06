@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
+import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
 import type { Checkin, Class, Student } from "@/types";
 
 const schema = z.object({
@@ -29,7 +30,7 @@ type FormData = z.infer<typeof schema>;
 
 const CheckinsPage = () => {
   usePageTitle("Check-ins");
-  const { items, create, update, remove } = useLocalStorageCrud<Checkin>("gymhub:checkins");
+  const { items, create, update, remove, isLoading } = useLocalStorageCrud<Checkin>("gymhub:checkins");
   const { items: students } = useLocalStorageCrud<Student>("gymhub:students");
   const { items: classes } = useLocalStorageCrud<Class>("gymhub:classes");
   const [search, setSearch] = useState("");
@@ -70,11 +71,17 @@ const CheckinsPage = () => {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <CrudPageSkeleton />
+      ) : (
+        <>
       <PageHeader title="Check-ins" description="CRUD completo de check-ins" breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Check-ins" }]} actions={<Button size="sm" onClick={() => { setEditing(null); form.reset(); setOpen(true); }}><Plus className="mr-1.5 h-4 w-4" />Novo Check-in</Button>} />
       <div className="mb-4"><SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar check-in..." className="max-w-sm" /></div>
       <DataTable columns={columns} data={processed.data} sortKey={sortKey} sortDirection={sortDirection} onSortChange={(key) => { const k = key as keyof Checkin; if (k === sortKey) setSortDirection((d) => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDirection("asc"); } }} />
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />
       <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Editar check-in" : "Novo check-in"}</DialogTitle></DialogHeader><form onSubmit={form.handleSubmit((v) => { if (editing) update(editing.id, v); else create(v); setOpen(false); })} className="space-y-3"><div><Label>studentId</Label><Select value={form.watch("studentId")} onValueChange={(v) => form.setValue("studentId", v)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{students.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><p className="text-xs text-destructive">{form.formState.errors.studentId?.message}</p></div><div><Label>classId</Label><Select value={form.watch("classId")} onValueChange={(v) => form.setValue("classId", v)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.date} {c.time}</SelectItem>)}</SelectContent></Select><p className="text-xs text-destructive">{form.formState.errors.classId?.message}</p></div><div><Label>checkinTime</Label><Input type="datetime-local" {...form.register("checkinTime")} /><p className="text-xs text-destructive">{form.formState.errors.checkinTime?.message}</p></div><div><Label>source</Label><Select value={form.watch("source")} onValueChange={(v) => form.setValue("source", v as FormData["source"])}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="manual">manual</SelectItem><SelectItem value="wellhub">wellhub</SelectItem></SelectContent></Select></div><Button type="submit" className="w-full">Salvar</Button></form></DialogContent></Dialog>
+        </>
+      )}
     </AppLayout>
   );
 };

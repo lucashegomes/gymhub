@@ -15,6 +15,7 @@ import { TablePagination } from "@/components/tables/TablePagination";
 import { usersService } from "@/services/users/users.service";
 import { UserAvatarUpload } from "@/components/avatar/UserAvatarUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
 
 interface UserRow {
   id: string;
@@ -50,6 +51,7 @@ export default function UsersPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<UserRow | null>(null);
   const [roles, setRoles] = useState<RoleRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -84,8 +86,10 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    load().catch(console.error);
-    loadRoles().catch(console.error);
+    setIsLoading(true);
+    Promise.all([load(), loadRoles()])
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }, [search]);
 
   const processed = useMemo(() => {
@@ -168,6 +172,10 @@ export default function UsersPage() {
 
   return (
     <AppLayout>
+      {isLoading ? (
+        <CrudPageSkeleton />
+      ) : (
+        <>
       <PageHeader
         title="Usuários"
         description="CRUD de usuários e perfis"
@@ -248,6 +256,8 @@ export default function UsersPage() {
           </form>
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </AppLayout>
   );
 }

@@ -1,3 +1,4 @@
+import { resolveApiAssetUrl } from "@/services/core/media";
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 export interface AuthPermission {
@@ -15,6 +16,7 @@ export interface AuthUser {
   photoUrl?: string;
   roleId: string;
   status: "active" | "inactive" | "blocked";
+  lastLogin?: string;
 }
 
 export interface LoginResponse {
@@ -22,6 +24,13 @@ export interface LoginResponse {
   user: AuthUser;
   permissions: AuthPermission[];
   featureFlags: string[];
+}
+
+function normalizeUser(user: AuthUser): AuthUser {
+  return {
+    ...user,
+    photoUrl: resolveApiAssetUrl(user.photoUrl),
+  };
 }
 
 async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
@@ -44,11 +53,16 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 }
 
 export const authService = {
-  login(identifier: string, password: string) {
-    return request<LoginResponse>("/auth/login", {
+  async login(identifier: string, password: string) {
+    const response = await request<LoginResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ identifier, password }),
     });
+
+    return {
+      ...response,
+      user: normalizeUser(response.user),
+    };
   },
 
   logout(token: string) {
@@ -61,8 +75,12 @@ export const authService = {
     );
   },
 
-  getCurrentUser(token: string) {
-    return request<{ data: AuthUser; success: boolean }>("/auth/me", { method: "GET" }, token);
+  async getCurrentUser(token: string) {
+    const response = await request<{ data: AuthUser; success: boolean }>("/auth/me", { method: "GET" }, token);
+    return {
+      ...response,
+      data: normalizeUser(response.data),
+    };
   },
 
   requestPasswordReset(identifier: string) {

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { usersService } from "@/services/users/users.service";
 
@@ -13,19 +13,26 @@ export function UserAvatarUpload({ userId, currentPhotoUrl, onUploaded }: UserAv
   const [preview, setPreview] = useState<string | undefined>(currentPhotoUrl);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setPreview(currentPhotoUrl);
+  }, [currentPhotoUrl]);
+
   const onFileSelected = async (file?: File) => {
     if (!file) return;
 
-    setPreview(URL.createObjectURL(file));
+    const temporaryUrl = URL.createObjectURL(file);
+    setPreview(temporaryUrl);
     setLoading(true);
 
     try {
       const result = await usersService.uploadPhoto(userId, file);
       onUploaded?.(result.data.photoUrl);
-      setPreview(result.data.photoUrl || preview);
+      setPreview(result.data.photoUrl || currentPhotoUrl);
     } catch (error) {
       console.error(error);
+      setPreview(currentPhotoUrl);
     } finally {
+      URL.revokeObjectURL(temporaryUrl);
       setLoading(false);
     }
   };

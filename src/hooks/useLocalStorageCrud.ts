@@ -55,19 +55,31 @@ function normalizePayload(storageKey: string, payload: Record<string, unknown>) 
 
 export function useLocalStorageCrud<T extends { id: string }>(storageKey: string) {
   const [items, setItems] = useState<T[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const resource = resolveResource(storageKey);
 
   const refresh = useCallback(async () => {
-    const response = await fetch(`${API_BASE_URL}/${resource}?page=1&pageSize=1000`, {
-      headers: buildHeaders(),
-    });
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/${resource}?page=1&pageSize=1000`, {
+        headers: buildHeaders(),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to load ${resource}: HTTP ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Failed to load ${resource}: HTTP ${response.status}`);
+      }
+
+      const payload = (await response.json()) as { data: T[] };
+      setItems(payload.data || []);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : `Failed to load ${resource}`;
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
-
-    const payload = (await response.json()) as { data: T[] };
-    setItems(payload.data || []);
   }, [resource]);
 
   useEffect(() => {
@@ -143,5 +155,5 @@ export function useLocalStorageCrud<T extends { id: string }>(storageKey: string
     [resource, storageKey],
   );
 
-  return { items, ...actions, refresh };
+  return { items, isLoading, error, ...actions, refresh };
 }
