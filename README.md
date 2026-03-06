@@ -71,3 +71,53 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Docker (Ambiente Local)
+
+Arquivos adicionados:
+- `Dockerfile`
+- `docker-compose.yml`
+- `.dockerignore`
+- `.env.example`
+
+### Configurar variaveis
+
+```bash
+cp .env.example .env
+```
+
+### Subir frontend
+
+```bash
+docker compose up --build
+```
+
+Frontend disponivel em:
+- `http://localhost:5173`
+
+Por padrao, o frontend usa:
+- `VITE_API_URL=http://localhost:3000/api`
+
+### Encerrar
+
+```bash
+docker compose down
+```
+
+## Comunicacao Com Backend
+
+A aplicacao usa o hook `useLocalStorageCrud` como fachada de dados,
+mas agora ele faz chamadas HTTP para o backend (`VITE_API_URL`).
+
+Recursos consumidos:
+- `/students`
+- `/teachers`
+- `/courses`
+- `/classes`
+- `/checkins`
+
+Defina em `.env` (frontend):
+
+```env
+VITE_API_URL=http://localhost:3300/api
+```

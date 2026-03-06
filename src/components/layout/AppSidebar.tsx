@@ -47,7 +47,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <span className="text-base font-bold text-sidebar-foreground tracking-tight">
-              GymFlow
+              GymHub
             </span>
           )}
         </div>
