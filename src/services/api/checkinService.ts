@@ -1,16 +1,44 @@
-import type { Checkin, ApiResponse, PaginatedResponse } from "@/types";
+import type { ApiResponse, Checkin } from "@/types";
+import { BaseService } from "./baseService";
+import { classService } from "./classService";
+import { studentService } from "./studentService";
 
-export const checkinService = {
-  getAll: async (_page = 1, _pageSize = 10): Promise<PaginatedResponse<Checkin>> => {
-    return { data: [], total: 0, page: _page, pageSize: _pageSize, totalPages: 0 };
-  },
-  getById: async (_id: string): Promise<ApiResponse<Checkin | null>> => {
-    return { data: null, success: true };
-  },
-  create: async (_data: Partial<Checkin>): Promise<ApiResponse<Checkin | null>> => {
-    return { data: null, success: true, message: "Created" };
-  },
-  delete: async (_id: string): Promise<ApiResponse<null>> => {
-    return { data: null, success: true, message: "Deleted" };
-  },
-};
+export class CheckinsService extends BaseService<Checkin> {
+  constructor() {
+    super(["type"]);
+  }
+
+  override async create(data: Partial<Checkin>): Promise<ApiResponse<Checkin | null>> {
+    if (!data.studentId || !studentService.exists(data.studentId)) {
+      return {
+        data: null,
+        success: false,
+        message: "studentId inválido: aluno não encontrado",
+      };
+    }
+
+    if (!data.classId || !classService.exists(data.classId)) {
+      return {
+        data: null,
+        success: false,
+        message: "classId inválido: aula não encontrada",
+      };
+    }
+
+    const duplicate = this.getSnapshot().some(
+      (checkin) => checkin.studentId === data.studentId && checkin.classId === data.classId,
+    );
+
+    if (duplicate) {
+      return {
+        data: null,
+        success: false,
+        message: "Check-in duplicado não permitido para a mesma aula",
+      };
+    }
+
+    return super.create(data);
+  }
+}
+
+export const checkinService = new CheckinsService();

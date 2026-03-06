@@ -1,19 +1,47 @@
-import type { Class, ApiResponse, PaginatedResponse } from "@/types";
+import type { ApiResponse, Class } from "@/types";
+import { BaseService } from "./baseService";
+import { courseService } from "./courseService";
+import { teacherService } from "./teacherService";
 
-export const classService = {
-  getAll: async (_page = 1, _pageSize = 10): Promise<PaginatedResponse<Class>> => {
-    return { data: [], total: 0, page: _page, pageSize: _pageSize, totalPages: 0 };
-  },
-  getById: async (_id: string): Promise<ApiResponse<Class | null>> => {
-    return { data: null, success: true };
-  },
-  create: async (_data: Partial<Class>): Promise<ApiResponse<Class | null>> => {
-    return { data: null, success: true, message: "Created" };
-  },
-  update: async (_id: string, _data: Partial<Class>): Promise<ApiResponse<Class | null>> => {
-    return { data: null, success: true, message: "Updated" };
-  },
-  delete: async (_id: string): Promise<ApiResponse<null>> => {
-    return { data: null, success: true, message: "Deleted" };
-  },
-};
+export type ClassPayload = Partial<Class> & { capacity?: number };
+
+export class ClassesService extends BaseService<Class> {
+  constructor() {
+    super(["room", "date"]);
+  }
+
+  override async create(data: ClassPayload): Promise<ApiResponse<Class | null>> {
+    if (!data.teacherId || !teacherService.exists(data.teacherId)) {
+      return {
+        data: null,
+        success: false,
+        message: "teacherId inválido: professor não encontrado",
+      };
+    }
+
+    if (!data.courseId || !courseService.exists(data.courseId)) {
+      return {
+        data: null,
+        success: false,
+        message: "courseId inválido: curso não encontrado",
+      };
+    }
+
+    if (data.capacity !== undefined) {
+      const courseResponse = await courseService.getById(data.courseId);
+      const courseCapacity = courseResponse.data?.maxStudents;
+
+      if (courseCapacity !== undefined && data.capacity > courseCapacity) {
+        return {
+          data: null,
+          success: false,
+          message: "capacity inválido: capacidade da aula maior que a do curso",
+        };
+      }
+    }
+
+    return super.create(data);
+  }
+}
+
+export const classService = new ClassesService();

@@ -1,24 +1,11 @@
-export * from './core/apiClient';
-export * from './core/base.repository';
-export * from './core/base.service';
-export * from './core/pagination';
-export * from './core/filters';
-export * from './core/storage';
-export * from './core/mockDelay';
-export * from './core/id';
-export * from './core/seed';
+import { studentService } from "./api/studentService";
+import { teacherService } from "./api/teacherService";
+import { courseService } from "./api/courseService";
+import { classService } from "./api/classService";
+import { checkinService } from "./api/checkinService";
 
-export * from './students/students.types';
-export * from './students/students.service';
-
-export * from './teachers/teachers.types';
-export * from './teachers/teachers.service';
-
-export * from './courses/courses.types';
-export * from './courses/courses.service';
-
-export * from './classes/classes.types';
-export * from './classes/classes.service';
-
-export * from './checkins/checkins.types';
-export * from './checkins/checkins.service';
+export const studentsService = studentService;
+export const teachersService = teacherService;
+export const coursesService = courseService;
+export const classesService = classService;
+export const checkinsService = checkinService;
