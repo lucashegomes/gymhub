@@ -1,18 +1,50 @@
-# Welcome to your Lovable project
+# Gymhub
 
-## Project info
+Aplicação frontend para gerenciamento de academias, utilizando React e TailwindCSS.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Requisitos
 
-## How can I edit this code?
+- Node.js 18+
+- npm ou yarn
+
+## Configuração e Desenvolvimento
+
+1. Clone o repositório:
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   ```
+2. Navegue até o diretório do projeto:
+   ```bash
+   cd gymhub
+   ```
+3. Instale as dependências:
+   ```bash
+   npm install
+   ```
+4. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+O servidor será iniciado em `http://localhost:3000`.
+
+## Métodos Alternativos de Desenvolvimento
+
+### Usando GitHub Codespaces
+
+1. Acesse a página principal do repositório no GitHub.
+2. Clique no botão "Code" e selecione a aba "Codespaces".
+3. Crie um novo Codespace para iniciar um ambiente de desenvolvimento remoto.
+
+### Editando Diretamente no GitHub
+
+1. Navegue até o arquivo desejado no repositório.
+2. Clique no botão de edição (ícone de lápis).
+3. Faça suas alterações e confirme o commit.
+
+## Como editar o código?
 
 There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
 
 **Use your preferred IDE**
 
@@ -64,13 +96,6 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
 
 ## Docker (Ambiente Local)
 
@@ -104,7 +129,7 @@ Por padrao, o frontend usa:
 docker compose down
 ```
 
-## Comunicacao Com Backend
+## Comunicacao com o Backend
 
 A aplicacao usa o hook `useLocalStorageCrud` como fachada de dados,
 mas agora ele faz chamadas HTTP para o backend (`VITE_API_URL`).
