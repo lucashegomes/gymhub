@@ -13,7 +13,25 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        heading: ["Space Grotesk", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       colors: {
+        surface: "hsl(var(--color-surface))",
+        "surface-hover": "hsl(var(--color-surface-hover))",
+        "text-primary": "hsl(var(--color-text-primary))",
+        "text-secondary": "hsl(var(--color-text-secondary))",
+        "text-muted": "hsl(var(--color-text-muted))",
+        "primary-hover": "hsl(var(--color-primary-hover))",
+        "secondary-hover": "hsl(var(--color-secondary-hover))",
+        danger: "hsl(var(--color-danger))",
+        students: "hsl(var(--module-students))",
+        teachers: "hsl(var(--module-teachers))",
+        courses: "hsl(var(--module-courses))",
+        classes: "hsl(var(--module-classes))",
+        checkins: "hsl(var(--module-checkins))",
+        plans: "hsl(var(--module-plans))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -62,9 +80,16 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        "2xl": "var(--radius-2xl)",
+      },
+      boxShadow: {
+        sm: "var(--shadow-sm)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
       },
       keyframes: {
         "accordion-down": {

@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatarUpload } from "@/components/avatar/UserAvatarUpload";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 function buildInitials(name?: string) {
   if (!name) return "GH";
@@ -40,6 +41,7 @@ export function AppHeader() {
       <SidebarTrigger className="mr-2" />
       <Separator orientation="vertical" className="mr-4 h-6" />
       <div className="ml-auto flex items-center gap-3">
+        <ThemeToggle />
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-4 w-4" />
           <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-destructive" />
