@@ -12,12 +12,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLocalStorageCrud } from "@/hooks/useLocalStorageCrud";
 import { TablePagination } from "@/components/tables/TablePagination";
 import { CrudPageSkeleton } from "@/components/ui/crud-page-skeleton";
 import { ExportButton } from "@/components/ui/ExportButton";
+import { AsyncMultiCombobox } from "@/components/forms/AsyncCombobox";
 import type { Course, Teacher } from "@/types";
 
 const schema = z.object({
@@ -109,7 +109,42 @@ const CoursesPage = () => {
       <div className="mb-4"><SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Buscar curso..." className="max-w-sm" /></div>
       <DataTable columns={columns} data={processed.data} sortKey={sortKey} sortDirection={sortDirection} onSortChange={onSortChange} />
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />
-      <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? "Editar curso" : "Novo curso"}</DialogTitle></DialogHeader><form onSubmit={submit} className="space-y-3"><div><Label>name</Label><Input {...form.register("name")} /><p className="text-xs text-destructive">{form.formState.errors.name?.message}</p></div><div><Label>Professores</Label><div className="max-h-40 overflow-auto rounded-md border p-3 space-y-2">{teachers.map((t) => {const checked = (form.watch("teacherIds") || []).includes(t.id); return (<label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={checked} onChange={() => {const current = form.watch("teacherIds") || []; form.setValue("teacherIds", checked ? current.filter((id) => id !== t.id) : [...current, t.id]);}} />{t.name}</label>);})}</div><p className="text-xs text-destructive">{form.formState.errors.teacherIds?.message}</p></div><div><Label>capacity</Label><Input type="number" {...form.register("capacity")} /><p className="text-xs text-destructive">{form.formState.errors.capacity?.message}</p></div><div><Label>description</Label><Textarea {...form.register("description")} /><p className="text-xs text-destructive">{form.formState.errors.description?.message}</p></div><Button type="submit" className="w-full">Salvar</Button></form></DialogContent></Dialog>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editing ? "Editar curso" : "Novo curso"}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submit} className="space-y-3">
+            <div>
+              <Label>name</Label>
+              <Input {...form.register("name")} />
+              <p className="text-xs text-destructive">{form.formState.errors.name?.message}</p>
+            </div>
+            <div>
+              <Label>Professores associados</Label>
+              <AsyncMultiCombobox
+                endpoint="/teachers"
+                value={form.watch("teacherIds") || []}
+                onChange={(value) => form.setValue("teacherIds", value)}
+                placeholder="Pesquisar e selecionar professores"
+                searchPlaceholder="Pesquisar professor..."
+              />
+              <p className="text-xs text-destructive">{form.formState.errors.teacherIds?.message}</p>
+            </div>
+            <div>
+              <Label>capacity</Label>
+              <Input type="number" {...form.register("capacity")} />
+              <p className="text-xs text-destructive">{form.formState.errors.capacity?.message}</p>
+            </div>
+            <div>
+              <Label>description</Label>
+              <Textarea {...form.register("description")} />
+              <p className="text-xs text-destructive">{form.formState.errors.description?.message}</p>
+            </div>
+            <Button type="submit" className="w-full">Salvar</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
         </>
       )}
     </AppLayout>

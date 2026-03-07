@@ -1,29 +1,27 @@
-import type { Plan } from "@/types";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AsyncCombobox } from "@/components/forms/AsyncCombobox";
 
 interface PlanSelectorProps {
   value?: string;
-  plans: Plan[];
   onChange: (value: string) => void;
 }
 
-export function PlanSelector({ value, plans, onChange }: PlanSelectorProps) {
+export function PlanSelector({ value, onChange }: PlanSelectorProps) {
   return (
     <div>
       <Label>Plano</Label>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger>
-          <SelectValue placeholder="Selecione um plano ativo" />
-        </SelectTrigger>
-        <SelectContent>
-          {plans.map((plan) => (
-            <SelectItem key={plan.id} value={plan.id}>
-              {plan.name} - R$ {Number(plan.price).toFixed(2)} ({plan.monthlyCheckinLimit} check-ins/mês)
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <AsyncCombobox
+        endpoint="/plans"
+        value={value}
+        onChange={onChange}
+        placeholder="Selecione um plano"
+        searchPlaceholder="Pesquisar plano..."
+        mapOption={(item) => ({
+          value: String(item.id || ""),
+          label: `${String(item.name || "")} - R$ ${Number(item.price || 0).toFixed(2)} (${Number(item.monthlyCheckinLimit || 0)} check-ins/mês)`,
+          meta: item,
+        })}
+      />
     </div>
   );
 }

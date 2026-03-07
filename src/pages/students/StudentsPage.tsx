@@ -23,7 +23,7 @@ import { GuardianSelector } from "@/components/forms/GuardianSelector";
 import { CheckinHistoryModal } from "@/components/modals/CheckinHistoryModal";
 import { isValidCpf } from "@/utils/cpf";
 import { useNavigate } from "react-router-dom";
-import type { Plan, Student } from "@/types";
+import type { Student } from "@/types";
 
 const schema = z.object({
   name: z.string().min(3),
@@ -57,21 +57,10 @@ type FormData = z.infer<typeof schema>;
 const statusLabel = { active: "Ativo", inactive: "Inativo", suspended: "Suspenso" };
 const statusVariant = { active: "success", inactive: "inactive", suspended: "warning" } as const;
 
-function getAge(birthDate: string) {
-  const birth = new Date(birthDate);
-  if (Number.isNaN(birth.getTime())) return 0;
-  const now = new Date();
-  let age = now.getFullYear() - birth.getFullYear();
-  const month = now.getMonth() - birth.getMonth();
-  if (month < 0 || (month === 0 && now.getDate() < birth.getDate())) age -= 1;
-  return age;
-}
-
 const StudentsPage = () => {
   usePageTitle("Alunos");
   const navigate = useNavigate();
   const { items, create, update, remove, isLoading } = useLocalStorageCrud<Student>("gymhub:students");
-  const { items: plans } = useLocalStorageCrud<Plan>("gymhub:plans");
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<keyof Student>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -237,7 +226,7 @@ const StudentsPage = () => {
       <TablePagination page={processed.currentPage} totalPages={processed.totalPages} total={processed.total} onPageChange={setPage} />
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? "Editar aluno" : "Novo aluno"}</DialogTitle></DialogHeader>
           <form onSubmit={submit} className="space-y-3">
             {(["name", "cpf", "email", "phone", "birthDate", "planType", "integrationId"] as const).map((field) => (
@@ -249,12 +238,10 @@ const StudentsPage = () => {
             ))}
             <PlanSelector
               value={form.watch("planId")}
-              plans={plans}
               onChange={(value) => form.setValue("planId", value)}
             />
             <GuardianSelector
               value={form.watch("guardianStudentIds") || []}
-              options={items.filter((student) => student.id !== editing?.id && getAge(student.birthDate) >= 18)}
               onChange={(value) => form.setValue("guardianStudentIds", value)}
             />
             <p className="text-xs text-destructive">{form.formState.errors.guardianStudentIds?.message as string}</p>
