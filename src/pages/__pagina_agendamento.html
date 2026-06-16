@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento de Emissão</title>
+    <style>
+        :root {
+            --primary-color: #5c328e;
+            --primary-light: #f3ebfa;
+            --text-dark: #333333;
+            --text-muted: #888888;
+            --bg-body: #f8f9fa;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .scheduler-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            padding-bottom: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Sections */
+        .section {
+            padding: 1.5rem 2rem 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+        }
+
+        /* Controls */
+        .month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            background: var(--bg-body);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .month-selector button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .month-selector span {
+            font-weight: bold;
+            color: var(--text-dark);
+            text-transform: capitalize;
+        }
+
+        /* Grids */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        /* Cards */
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(92, 50, 142, 0.1);
+        }
+
+        .card.selected {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Date Card Specifics */
+        .date-card .weekday {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .date-card.selected .weekday,
+        .date-card.selected .month-abbr,
+        .time-card.selected .time-range {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .date-card .day {
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .date-card .month-abbr {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Time Card Specifics */
+        .time-card .time {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .time-card .time-range {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Confirmation Box */
+        .confirmation-box {
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .confirmation-box p {
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .confirmation-details {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .detail-badge {
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .detail-badge span {
+            color: var(--primary-color);
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: calc(100% - 4rem);
+            margin: 2rem 2rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #4a2872;
+        }
+
+        .btn-submit:disabled {
+            background-color: #a38bc2;
+            cursor: not-allowed;
+        }
+
+        /* States */
+        .hidden { display: none !important; }
+        .loading { text-align: center; padding: 2rem; color: var(--primary-color); }
+    </style>
+</head>
+<body>
+
+    <div class="scheduler-container">
+        <header class="header">
+            <h1>Agendamento de Emissão</h1>
+            <p>Reserve seu horário para emissão do seu certificado digital</p>
+        </header>
+
+        <section class="section">
+            <div class="section-header">
+                <h2>📅 Escolha a Data do Atendimento</h2>
+            </div>
+            <p class="section-subtitle">Selecione uma das datas disponíveis para realizar a validação do seu certificado digital</p>
+            
+            <div class="month-selector">
+                <button onclick="changeMonth(-1)">&lt;</button>
+                <span id="current-month-display">Carregando...</span>
+                <button onclick="changeMonth(1)">&gt;</button>
+            </div>
+
+            <div id="loading-dates" class="loading hidden">Buscando datas disponíveis...</div>
+            <div class="grid" id="date-grid">
+                </div>
+        </section>
+
+        <section class="section" id="time-section">
+            <div class="section-header">
+                <h2>🕒 Escolha o Horário</h2>
+            </div>
+            <p class="section-subtitle">Selecione o horário mais conveniente para você</p>
+            
+            <div class="grid" id="time-grid">
+                </div>
+        </section>
+
+        <section class="section hidden" id="confirmation-section">
+            <div class="section-header">
+                <h2>✅ Confirmação do Agendamento</h2>
+            </div>
+            <p class="section-subtitle">Revise os dados do seu agendamento</p>
+            
+            <div class="confirmation-box">
+                <p>SEU ATENDIMENTO SERÁ AGENDADO PARA:</p>
+                <div class="confirmation-details">
+                    <div class="detail-badge">
+                        <span>📅</span> <div id="confirm-date">--/--/----</div>
+                    </div>
+                    <span>às</span>
+                    <div class="detail-badge">
+                        <span>🕒</span> <div id="confirm-time">--:--</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <button class="btn-submit" id="btn-submit" disabled>📅 Confirmar Agendamento</button>
+    </div>
+
+    <script>
+        // --- 1. MOCK DATA E INTEGRAÇÃO DE API ---
+        // Estrutura: { "YYYY-MM": { "YYYY-MM-DD": ["HH:MM", "HH:MM"] } }
+        const apiMockDatabase = {
+            "2026-06": {
+                "2026-06-16": ["14:40", "15:00", "15:20", "15:40", "16:00", "16:20", "16:40", "17:00", "17:20", "17:40"],
+                "2026-06-17": ["09:00", "09:20", "10:00", "11:00", "14:00"],
+                "2026-06-18": ["13:00", "13:20", "14:00"],
+                "2026-06-19": ["10:00", "10:20", "10:40"],
+                "2026-06-22": ["09:00", "09:20", "15:00", "15:20"]
+            },
+            "2026-07": {
+                "2026-07-01": ["10:00", "10:20"],
+                "2026-07-02": ["14:00", "14:20", "14:40"]
+            }
+        };
+
+        // Simula uma chamada Fetch real para o seu backend
+        async function fetchAvailableDatesFromAPI(year, month) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const key = `${year}-${String(month).padStart(2, '0')}`;
+                    resolve(apiMockDatabase[key] || {});
+                }, 400); // Simulando delay de rede
+            });
+        }
+
+        // --- 2. GERENCIAMENTO DE ESTADO ---
+        let currentDate = new Date(2026, 5, 1); // Inicializando em Junho de 2026
+        let availableDatesInMonth = {};
+        let selectedDateStr = null;
+        let selectedTimeStr = null;
+
+        // --- 3. LÓGICA DE UI ---
+        const elements = {
+            monthDisplay: document.getElementById('current-month-display'),
+            dateGrid: document.getElementById('date-grid'),
+            timeGrid: document.getElementById('time-grid'),
+            timeSection: document.getElementById('time-section'),
+            confirmationSection: document.getElementById('confirmation-section'),
+            confirmDate: document.getElementById('confirm-date'),
+            confirmTime: document.getElementById('confirm-time'),
+            btnSubmit: document.getElementById('btn-submit'),
+            loadingDates: document.getElementById('loading-dates')
+        };
+
+        // Inicialização
+        async function init() {
+            await loadMonthData();
+        }
+
+        // Troca de mês
+        async function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            selectedDateStr = null;
+            selectedTimeStr = null;
+            updateConfirmationUI();
+            await loadMonthData();
+        }
+
+        // Carrega e renderiza o mês atual
+        async function loadMonthData() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1; // JS meses vão de 0-11
+
+            // Formatação do título do mês (ex: Junho 2026)
+            const monthName = currentDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+            elements.monthDisplay.textContent = monthName;
+
+            // UI de carregamento
+            elements.dateGrid.innerHTML = '';
+            elements.timeGrid.innerHTML = '';
+            elements.timeSection.classList.add('hidden');
+            elements.loadingDates.classList.remove('hidden');
+
+            // Chamada "API"
+            availableDatesInMonth = await fetchAvailableDatesFromAPI(year, month);
+            
+            elements.loadingDates.classList.add('hidden');
+            renderDateGrid();
+        }
+
+        function renderDateGrid() {
+            elements.dateGrid.innerHTML = '';
+            const dates = Object.keys(availableDatesInMonth).sort();
+
+            if(dates.length === 0) {
+                elements.dateGrid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#888;">Nenhuma data disponível neste mês.</p>';
+                return;
+            }
+
+            dates.forEach(dateStr => {
+                const [year, month, day] = dateStr.split('-');
+                const dateObj = new Date(year, month - 1, day);
+                
+                const weekday = dateObj.toLocaleString('pt-BR', { weekday: 'long' }).split('-')[0];
+                const monthAbbr = dateObj.toLocaleString('pt-BR', { month: 'short' }).replace('.','');
+
+                const card = document.createElement('div');
+                card.className = `card date-card ${selectedDateStr === dateStr ? 'selected' : ''}`;
+                card.onclick = () => selectDate(dateStr);
+                
+                card.innerHTML = `
+                    <span class="weekday">${weekday}</span>
+                    <span class="day">${day}</span>
+                    <span class="month-abbr">${monthAbbr}</span>
+                `;
+                elements.dateGrid.appendChild(card);
+            });
+        }
+
+        function selectDate(dateStr) {
+            selectedDateStr = dateStr;
+            selectedTimeStr = null; // Reseta o tempo ao trocar de dia
+            
+            renderDateGrid(); // Re-renderiza para atualizar o visual 'selected'
+            renderTimeGrid();
+            updateConfirmationUI();
+        }
+
+        function renderTimeGrid() {
+            elements.timeGrid.innerHTML = '';
+            elements.timeSection.classList.remove('hidden');
+            
+            const times = availableDatesInMonth[selectedDateStr] || [];
+
+            times.forEach(time => {
+                // Calcula o "até" somando 20 minutos (apenas visual, conforme mockup)
+                const [hour, min] = time.split(':').map(Number);
+                const endDate = new Date(2000, 0, 1, hour, min + 20);
+                const endStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+
+                const card = document.createElement('div');
+                card.className = `card time-card ${selectedTimeStr === time ? 'selected' : ''}`;
+                card.onclick = () => selectTime(time, endStr);
+                
+                card.innerHTML = `
+                    <span class="time">${time}</span>
+                    <span class="time-range">até ${endStr}</span>
+                `;
+                elements.timeGrid.appendChild(card);
+            });
+        }
+
+        function selectTime(time, endStr) {
+            selectedTimeStr = time;
+            renderTimeGrid(); // Atualiza classes selecionadas
+            
+            // Preenche os dados de confirmação
+            const [year, month, day] = selectedDateStr.split('-');
+            elements.confirmDate.textContent = `${day}/${month}/${year}`;
+            elements.confirmTime.textContent = `${time} – ${endStr}`;
+            
+            updateConfirmationUI();
+            
+            // Rola a página suavemente para a área de confirmação
+            elements.confirmationSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function updateConfirmationUI() {
+            if (selectedDateStr && selectedTimeStr) {
+                elements.confirmationSection.classList.remove('hidden');
+                elements.btnSubmit.disabled = false;
+            } else {
+                elements.confirmationSection.classList.add('hidden');
+                elements.btnSubmit.disabled = true;
+            }
+        }
+
+        // Inicia a aplicação
+        init();
+
+    </script>
+</body>
+</html>
